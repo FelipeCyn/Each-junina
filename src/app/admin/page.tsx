@@ -34,7 +34,15 @@ export default async function AdminPage() {
           <h1 className="text-white font-black text-lg">🎪 ADMIN</h1>
           <p className="text-gray-400 text-xs mt-0.5 font-medium">Festa Junina</p>
         </div>
-        <LogoutButton className="text-gray-400 hover:text-white text-sm font-bold transition-colors" />
+        <div className="flex items-center gap-3">
+          <a
+            href="/admin/sorteio"
+            className="bg-yellow-400 hover:bg-yellow-300 text-black font-black text-sm px-3 py-2 rounded-xl transition-colors"
+          >
+            🎟️ Sorteio
+          </a>
+          <LogoutButton className="text-gray-400 hover:text-white text-sm font-bold transition-colors" />
+        </div>
       </header>
 
       <div className="bg-yellow-400 px-4 py-4 flex gap-4">

@@ -47,7 +47,7 @@ export async function registerUser(name: string, cpf: string) {
     .from("profiles")
     .select("id, name, role")
     .eq("cpf", cleanedCPF)
-    .single();
+    .maybeSingle();
 
   let profileId: string;
   let role: string;
@@ -60,11 +60,23 @@ export async function registerUser(name: string, cpf: string) {
       .from("profiles")
       .insert({ name: trimmedName, cpf: cleanedCPF, role: "comprador" })
       .select("id")
-      .single();
+      .maybeSingle();
 
-    if (error) return { error: "Erro ao cadastrar. Tente novamente." };
-    profileId = newProfile.id;
-    role = "comprador";
+    if (error || !newProfile) {
+      // CPF foi inserido por outra requisição simultânea — busca o existente
+      const { data: raceProfile } = await supabase
+        .from("profiles")
+        .select("id, role")
+        .eq("cpf", cleanedCPF)
+        .maybeSingle();
+
+      if (!raceProfile) return { error: "Erro ao cadastrar. Tente novamente." };
+      profileId = raceProfile.id;
+      role = raceProfile.role;
+    } else {
+      profileId = newProfile.id;
+      role = "comprador";
+    }
   }
 
   await createSessionToken(profileId, false);

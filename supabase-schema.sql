@@ -32,6 +32,15 @@ create table public.purchases (
   created_at timestamptz default now()
 );
 
+-- Tabela de números de sorteio
+create table public.raffle_tickets (
+  id uuid default gen_random_uuid() primary key,
+  buyer_id uuid references public.profiles(id) on delete cascade not null,
+  seller_id uuid references public.profiles(id) on delete cascade not null,
+  ticket_number text unique not null,
+  issued_at timestamptz default now()
+);
+
 -- =============================================
 -- ÍNDICES para performance
 -- =============================================
@@ -39,6 +48,7 @@ create table public.purchases (
 create index on public.sessions(token);
 create index on public.sessions(expires_at);
 create index on public.purchases(buyer_id);
+create index on public.raffle_tickets(buyer_id);
 create index on public.profiles(cpf);
 create index on public.profiles(role);
 
