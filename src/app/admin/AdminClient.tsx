@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { updateUserRole } from "@/app/actions/users";
+import { updateUserRole, deleteUser } from "@/app/actions/users";
 import { formatCPF } from "@/lib/cpf";
 
 interface Profile {
@@ -30,6 +30,7 @@ export default function AdminClient({ initialProfiles }: { initialProfiles: Prof
   const [query, setQuery] = useState("");
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [filterRole, setFilterRole] = useState<string>("all");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return profiles.filter((p) => {
@@ -51,6 +52,16 @@ export default function AdminClient({ initialProfiles }: { initialProfiles: Prof
       );
     }
     setLoadingId(null);
+  }
+
+  async function handleDelete(profileId: string) {
+    setLoadingId(profileId);
+    const result = await deleteUser(profileId);
+    if (!result.error) {
+      setProfiles((prev) => prev.filter((p) => p.id !== profileId));
+    }
+    setLoadingId(null);
+    setConfirmDeleteId(null);
   }
 
   return (
@@ -150,26 +161,48 @@ export default function AdminClient({ initialProfiles }: { initialProfiles: Prof
                 </div>
               )}
 
-              <div className="flex gap-2 mt-3">
-                {["comprador", "vendedor", "pending"].map((role) => (
+              {confirmDeleteId === profile.id ? (
+                <div className="flex gap-2 mt-3">
+                  <p className="flex-1 text-xs font-bold text-gray-500 self-center">Confirmar exclusão?</p>
                   <button
-                    key={role}
-                    onClick={() => handleRoleChange(profile.id, role)}
-                    disabled={profile.role === role || loadingId === profile.id}
-                    className={`flex-1 py-2 rounded-lg text-xs font-black border-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                      profile.role === role
-                        ? "border-black bg-black text-white"
-                        : "border-gray-200 text-gray-600 hover:border-gray-400"
-                    }`}
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="px-3 py-2 rounded-lg text-xs font-black border-2 border-gray-200 text-gray-600 hover:border-gray-400 transition-colors"
                   >
-                    {loadingId === profile.id && profile.role !== role
-                      ? "..."
-                      : role === "pending"
-                      ? "Aguard."
-                      : ROLE_LABELS[role]}
+                    Não
                   </button>
-                ))}
-              </div>
+                  <button
+                    onClick={() => handleDelete(profile.id)}
+                    disabled={loadingId === profile.id}
+                    className="px-3 py-2 rounded-lg text-xs font-black bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                  >
+                    {loadingId === profile.id ? "..." : "Sim, excluir"}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2 mt-3">
+                  {["comprador", "vendedor"].map((role) => (
+                    <button
+                      key={role}
+                      onClick={() => handleRoleChange(profile.id, role)}
+                      disabled={profile.role === role || loadingId === profile.id}
+                      className={`flex-1 py-2 rounded-lg text-xs font-black border-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                        profile.role === role
+                          ? "border-black bg-black text-white"
+                          : "border-gray-200 text-gray-600 hover:border-gray-400"
+                      }`}
+                    >
+                      {loadingId === profile.id ? "..." : ROLE_LABELS[role]}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setConfirmDeleteId(profile.id)}
+                    disabled={loadingId === profile.id}
+                    className="px-3 py-2 rounded-lg text-xs font-black border-2 border-red-200 text-red-500 hover:bg-red-600 hover:text-white hover:border-red-600 disabled:opacity-40 transition-colors"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

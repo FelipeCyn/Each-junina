@@ -55,6 +55,21 @@ export async function searchAllUsers(query: string) {
   return { results: data ?? [] };
 }
 
+export async function deleteUser(userId: string) {
+  const session = await getSession();
+  if (!session?.isAdmin) return { error: "Não autorizado." };
+
+  const supabase = createAdminClient();
+
+  await supabase.from("raffle_tickets").delete().eq("buyer_id", userId);
+  await supabase.from("purchases").delete().eq("buyer_id", userId);
+  await supabase.from("sessions").delete().eq("profile_id", userId);
+  const { error } = await supabase.from("profiles").delete().eq("id", userId);
+
+  if (error) return { error: "Erro ao excluir usuário." };
+  return { success: true };
+}
+
 export async function updateUserRole(userId: string, role: string) {
   const session = await getSession();
   if (!session?.isAdmin) return { error: "Não autorizado." };

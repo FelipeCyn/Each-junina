@@ -10,6 +10,9 @@ export default async function SorteioPage() {
 
   const { tickets } = await getAllTickets();
 
+  const drawnCount = (tickets as { drawn_at: string | null }[]).filter((t) => t.drawn_at).length;
+  const remaining = tickets.length - drawnCount;
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="bg-black px-4 py-4 flex items-center justify-between">
@@ -23,16 +26,18 @@ export default async function SorteioPage() {
       </header>
 
       <div className="bg-yellow-400 px-4 py-4">
-        <div className="max-w-lg mx-auto flex gap-4">
+        <div className="max-w-lg mx-auto flex gap-3">
           <div className="flex-1 bg-white rounded-xl p-3 text-center">
-            <p className="text-xs text-gray-500 font-bold uppercase">Números emitidos</p>
+            <p className="text-xs text-gray-500 font-bold uppercase">Total</p>
             <p className="text-2xl font-black text-black mt-0.5">{tickets.length}</p>
           </div>
           <div className="flex-1 bg-white rounded-xl p-3 text-center">
-            <p className="text-xs text-gray-500 font-bold uppercase">Participantes</p>
-            <p className="text-2xl font-black text-black mt-0.5">
-              {new Set(tickets.map((t) => (t.buyer as unknown as { name: string; cpf: string })?.cpf)).size}
-            </p>
+            <p className="text-xs text-gray-500 font-bold uppercase">Restantes</p>
+            <p className="text-2xl font-black text-green-600 mt-0.5">{remaining}</p>
+          </div>
+          <div className="flex-1 bg-white rounded-xl p-3 text-center">
+            <p className="text-xs text-gray-500 font-bold uppercase">Sorteados</p>
+            <p className="text-2xl font-black text-red-600 mt-0.5">{drawnCount}</p>
           </div>
         </div>
       </div>
@@ -41,6 +46,7 @@ export default async function SorteioPage() {
         id: string;
         ticket_number: string;
         issued_at: string;
+        drawn_at: string | null;
         buyer: { name: string; cpf: string };
       }[]} />
     </div>

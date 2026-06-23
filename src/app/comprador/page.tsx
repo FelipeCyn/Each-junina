@@ -36,7 +36,7 @@ export default async function CompradorPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <Header title="MEU EXTRATO" subtitle={session.profile?.name} />
+      <Header title="MEU EXTRATO" subtitle={session.profile?.name} showRefresh />
 
       <main className="flex-1 px-4 py-6 max-w-lg mx-auto w-full">
 

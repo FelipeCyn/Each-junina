@@ -78,7 +78,7 @@ export async function getAllTickets() {
 
   const { data } = await supabase
     .from("raffle_tickets")
-    .select("id, ticket_number, issued_at, buyer:profiles!raffle_tickets_buyer_id_fkey(name, cpf)")
+    .select("id, ticket_number, issued_at, drawn_at, buyer:profiles!raffle_tickets_buyer_id_fkey(name, cpf)")
     .order("ticket_number");
 
   return { tickets: data ?? [] };
@@ -92,17 +92,39 @@ export async function drawWinner() {
 
   const { data: tickets } = await supabase
     .from("raffle_tickets")
-    .select("id, ticket_number, buyer:profiles!raffle_tickets_buyer_id_fkey(name)");
+    .select("id, ticket_number, buyer:profiles!raffle_tickets_buyer_id_fkey(name)")
+    .is("drawn_at", null);
 
   if (!tickets || tickets.length === 0) {
-    return { error: "Nenhum número emitido ainda." };
+    return { error: "Todos os números já foram sorteados. Resete o sorteio para recomeçar." };
   }
 
   const winner = tickets[Math.floor(Math.random() * tickets.length)];
+
+  await supabase
+    .from("raffle_tickets")
+    .update({ drawn_at: new Date().toISOString() })
+    .eq("id", winner.id);
+
   return {
     winner: {
+      id: winner.id,
       ticketNumber: winner.ticket_number,
       name: (winner.buyer as unknown as { name: string }).name,
     },
   };
+}
+
+export async function resetDraw() {
+  const session = await getSession();
+  if (!session?.isAdmin) return { error: "Não autorizado." };
+
+  const supabase = createAdminClient();
+
+  await supabase
+    .from("raffle_tickets")
+    .update({ drawn_at: null })
+    .not("id", "is", null);
+
+  return { success: true };
 }
