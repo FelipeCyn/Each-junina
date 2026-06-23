@@ -10,6 +10,7 @@ interface Profile {
   cpf: string;
   role: string;
   total: number;
+  tickets: string[];
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -97,17 +98,12 @@ export default function AdminClient({ initialProfiles }: { initialProfiles: Prof
               key={profile.id}
               className="bg-white border-2 border-gray-100 rounded-xl p-4"
             >
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex-1 min-w-0">
                   <p className="font-black text-black truncate">{profile.name}</p>
                   <p className="text-xs text-gray-400 font-medium mt-0.5">
                     {formatCPF(profile.cpf)}
                   </p>
-                  {profile.total > 0 && (
-                    <p className="text-xs font-black text-red-600 mt-1">
-                      R$ {profile.total.toFixed(2).replace(".", ",")}
-                    </p>
-                  )}
                 </div>
                 <span
                   className={`text-xs font-black px-2 py-1 rounded-lg shrink-0 ${ROLE_COLORS[profile.role]}`}
@@ -115,6 +111,44 @@ export default function AdminClient({ initialProfiles }: { initialProfiles: Prof
                   {ROLE_LABELS[profile.role]}
                 </span>
               </div>
+
+              {profile.role === "comprador" && (
+                <div className="mb-3 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <div className="bg-gray-50 rounded-lg p-2 text-center">
+                      <p className="text-xs text-gray-400 font-bold uppercase" style={{ fontSize: 9 }}>Saldo total</p>
+                      <p className="font-black text-black text-sm leading-tight mt-0.5">
+                        R$ {profile.total.toFixed(2).replace(".", ",")}
+                      </p>
+                    </div>
+                    <div className="bg-yellow-50 rounded-lg p-2 text-center">
+                      <p className="text-xs text-yellow-700 font-bold uppercase" style={{ fontSize: 9 }}>Restante</p>
+                      <p className="font-black text-yellow-700 text-sm leading-tight mt-0.5">
+                        R$ {(profile.total - profile.tickets.length * 20).toFixed(2).replace(".", ",")}
+                      </p>
+                    </div>
+                    <div className="bg-red-50 rounded-lg p-2 text-center">
+                      <p className="text-xs text-red-600 font-bold uppercase" style={{ fontSize: 9 }}>Números</p>
+                      <p className="font-black text-red-600 text-sm leading-tight mt-0.5">
+                        {profile.tickets.length}
+                      </p>
+                    </div>
+                  </div>
+
+                  {profile.tickets.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {profile.tickets.map((n) => (
+                        <span
+                          key={n}
+                          className="bg-black text-yellow-400 text-xs font-black px-2 py-0.5 rounded-md"
+                        >
+                          #{n}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-2 mt-3">
                 {["comprador", "vendedor", "pending"].map((role) => (

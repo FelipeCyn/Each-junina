@@ -5,8 +5,8 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Festa Junina - Controle de Gastos",
-  description: "Sistema de monitoramento de gastos da Festa Junina",
+  title: "Each Copa - Controle de Gastos",
+  description: "Sistema de monitoramento de gastos da Each Copa",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

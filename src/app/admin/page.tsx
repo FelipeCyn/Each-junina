@@ -19,9 +19,20 @@ export default async function AdminPage() {
     .from("purchases")
     .select("buyer_id, amount");
 
+  const { data: allTickets } = await supabase
+    .from("raffle_tickets")
+    .select("buyer_id, ticket_number")
+    .order("ticket_number");
+
   const totalsMap: Record<string, number> = {};
   for (const p of allPurchases ?? []) {
     totalsMap[p.buyer_id] = (totalsMap[p.buyer_id] ?? 0) + p.amount;
+  }
+
+  const ticketsMap: Record<string, string[]> = {};
+  for (const t of allTickets ?? []) {
+    if (!ticketsMap[t.buyer_id]) ticketsMap[t.buyer_id] = [];
+    ticketsMap[t.buyer_id].push(t.ticket_number);
   }
 
   const grandTotal = Object.values(totalsMap).reduce((s, v) => s + v, 0);
@@ -32,7 +43,7 @@ export default async function AdminPage() {
       <header className="bg-black px-4 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-white font-black text-lg">🎪 ADMIN</h1>
-          <p className="text-gray-400 text-xs mt-0.5 font-medium">Festa Junina</p>
+          <p className="text-gray-400 text-xs mt-0.5 font-medium">Each Copa</p>
         </div>
         <div className="flex items-center gap-3">
           <a
@@ -68,6 +79,7 @@ export default async function AdminPage() {
         initialProfiles={(profiles ?? []).map((p) => ({
           ...p,
           total: totalsMap[p.id] ?? 0,
+          tickets: ticketsMap[p.id] ?? [],
         }))}
       />
     </div>

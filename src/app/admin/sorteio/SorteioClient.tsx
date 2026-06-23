@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { drawWinner } from "@/app/actions/raffle";
 import { maskCPF } from "@/lib/cpf";
+import RaffleCard from "@/components/RaffleCard";
 
 interface Ticket {
   id: string;
@@ -45,13 +46,15 @@ export default function SorteioClient({ initialTickets }: { initialTickets: Tick
   return (
     <main className="flex-1 px-4 py-6 max-w-lg mx-auto w-full">
       {winner && (
-        <div className="bg-yellow-400 border-4 border-black rounded-2xl p-6 mb-6 text-center">
-          <p className="text-black font-black text-xs uppercase tracking-widest mb-2">🏆 GANHADOR!</p>
-          <p className="text-black font-black text-5xl tracking-widest mb-3">#{winner.ticketNumber}</p>
-          <p className="text-black font-black text-2xl">{winner.name}</p>
+        <div className="mb-6 text-center">
+          <p className="text-black font-black text-sm uppercase tracking-widest mb-4">🏆 GANHADOR!</p>
+          <div className="flex justify-center mb-4">
+            <RaffleCard number={winner.ticketNumber} large />
+          </div>
+          <p className="font-black text-black text-2xl mt-4">{winner.name}</p>
           <button
             onClick={() => { setWinner(null); setDrawn(false); }}
-            className="mt-4 px-4 py-2 border-2 border-black rounded-xl text-xs font-black text-black hover:bg-black hover:text-yellow-400 transition-colors"
+            className="mt-4 px-5 py-2.5 border-2 border-black rounded-xl text-xs font-black text-black hover:bg-black hover:text-white transition-colors"
           >
             Sortear novamente
           </button>

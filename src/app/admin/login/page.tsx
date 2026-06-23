@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
       <header className="bg-red-600 px-5 py-5 text-center">
         <div className="text-3xl mb-1">🔑</div>
         <h1 className="text-white text-xl font-black tracking-tight">ACESSO ADMIN</h1>
-        <p className="text-red-200 text-xs mt-0.5">Festa Junina</p>
+        <p className="text-red-200 text-xs mt-0.5">Each Copa</p>
       </header>
 
       <div className="flex-1 flex flex-col justify-center px-5 py-8 max-w-sm mx-auto w-full">

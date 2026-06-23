@@ -57,8 +57,10 @@ export default function VendedorClient() {
     setResults([]);
     setError("");
     setActiveTab("gasto");
-    setRaffleInfo(null);
     setLastTicket(null);
+
+    const info = await getBuyerRaffleInfo(buyer.id);
+    if (!info.error) setRaffleInfo(info as RaffleInfo);
   }
 
   async function handleTabChange(tab: ActiveTab) {
@@ -181,12 +183,29 @@ export default function VendedorClient() {
                 <p className="text-xs text-gray-400 font-medium">{maskCPF(selected.cpf)}</p>
               </div>
               <button
-                onClick={() => { setSelected(null); setError(""); setSuccess(""); }}
+                onClick={() => { setSelected(null); setError(""); setSuccess(""); setRaffleInfo(null); }}
                 className="text-gray-400 hover:text-black text-xs font-bold border-2 border-gray-200 rounded-lg px-2 py-1"
               >
                 Trocar
               </button>
             </div>
+
+            {raffleInfo && (
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="bg-gray-50 rounded-xl p-3 text-center">
+                  <p className="text-xs text-gray-400 font-bold uppercase">Saldo total</p>
+                  <p className="font-black text-black text-lg leading-none mt-0.5">
+                    R$ {raffleInfo.totalSpent.toFixed(2).replace(".", ",")}
+                  </p>
+                </div>
+                <div className="bg-yellow-50 rounded-xl p-3 text-center">
+                  <p className="text-xs text-yellow-700 font-bold uppercase">Restante</p>
+                  <p className="font-black text-yellow-700 text-lg leading-none mt-0.5">
+                    R$ {(raffleInfo.totalSpent - raffleInfo.issued * 20).toFixed(2).replace(".", ",")}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-2 mb-0">
               <button

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { registerUser } from "./actions/auth";
 import { formatCPF, cleanCPF } from "@/lib/cpf";
 
@@ -36,9 +37,19 @@ export default function EntradaPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-red-600 px-5 py-5 text-center">
-        <div className="text-4xl mb-1">🎪</div>
-        <h1 className="text-white text-2xl font-black tracking-tight">FESTA JUNINA</h1>
+      <header className="bg-red-600 px-5 py-8 text-center">
+        <div className="flex justify-center mb-4">
+          <div className="bg-white rounded-3xl p-3 flex items-center justify-center overflow-hidden" style={{ width: 180, height: 180 }}>
+            <Image
+              src="/assets/card-logo.png"
+              alt="Each Copa"
+              width={168}
+              height={168}
+              className="object-contain w-full h-full"
+            />
+          </div>
+        </div>
+        <h1 className="text-white text-2xl font-black tracking-tight">EACH COPA</h1>
         <p className="text-red-200 text-sm font-medium mt-0.5">Controle de Gastos</p>
       </header>
 

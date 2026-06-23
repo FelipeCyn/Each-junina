@@ -12,7 +12,7 @@ export default async function AguardandoPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="bg-red-600 px-5 py-4">
-        <h1 className="text-white font-black text-lg">🎪 FESTA JUNINA</h1>
+        <h1 className="text-white font-black text-lg">🎪 EACH COPA</h1>
       </header>
 
       <div className="flex-1 flex flex-col items-center justify-center px-5 text-center">
