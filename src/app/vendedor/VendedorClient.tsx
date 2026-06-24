@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { searchBuyers } from "@/app/actions/users";
-import { createPurchase } from "@/app/actions/purchases";
+import { createPurchase, getBuyerPurchases, deletePurchase } from "@/app/actions/purchases";
 import { getBuyerRaffleInfo, issueRaffleTicket } from "@/app/actions/raffle";
 import { maskCPF } from "@/lib/cpf";
 
@@ -19,7 +19,14 @@ interface RaffleInfo {
   pending: number;
 }
 
-type ActiveTab = "gasto" | "sorteio";
+interface Purchase {
+  id: string;
+  amount: number;
+  description: string | null;
+  created_at: string;
+}
+
+type ActiveTab = "gasto" | "historico" | "sorteio";
 
 export default function VendedorClient() {
   const [query, setQuery] = useState("");
@@ -34,6 +41,11 @@ export default function VendedorClient() {
   const [raffleInfo, setRaffleInfo] = useState<RaffleInfo | null>(null);
   const [loadingRaffle, setLoadingRaffle] = useState(false);
   const [lastTicket, setLastTicket] = useState<string | null>(null);
+
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [loadingPurchases, setLoadingPurchases] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [searching, setSearching] = useState(false);
   const [success, setSuccess] = useState("");
@@ -58,6 +70,8 @@ export default function VendedorClient() {
     setError("");
     setActiveTab("gasto");
     setLastTicket(null);
+    setPurchases([]);
+    setConfirmDeleteId(null);
 
     const info = await getBuyerRaffleInfo(buyer.id);
     if (!info.error) setRaffleInfo(info as RaffleInfo);
@@ -68,10 +82,18 @@ export default function VendedorClient() {
     setError("");
     setSuccess("");
     setLastTicket(null);
+    setConfirmDeleteId(null);
 
     if (tab === "sorteio" && selected && !raffleInfo) {
       const info = await getBuyerRaffleInfo(selected.id);
       if (!info.error) setRaffleInfo(info as RaffleInfo);
+    }
+
+    if (tab === "historico" && selected) {
+      setLoadingPurchases(true);
+      const { purchases: data } = await getBuyerPurchases(selected.id);
+      setPurchases(data as Purchase[]);
+      setLoadingPurchases(false);
     }
   }
 
@@ -101,7 +123,27 @@ export default function VendedorClient() {
     setQuery("");
     setResults([]);
     setRaffleInfo(null);
+    setPurchases([]);
     setTimeout(() => setSuccess(""), 4000);
+  }
+
+  async function handleDeletePurchase(purchaseId: string) {
+    setDeletingId(purchaseId);
+    const result = await deletePurchase(purchaseId);
+    setDeletingId(null);
+    setConfirmDeleteId(null);
+
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+
+    setPurchases((prev) => prev.filter((p) => p.id !== purchaseId));
+
+    if (selected) {
+      const info = await getBuyerRaffleInfo(selected.id);
+      if (!info.error) setRaffleInfo(info as RaffleInfo);
+    }
   }
 
   async function handleIssueTicket() {
@@ -183,7 +225,7 @@ export default function VendedorClient() {
                 <p className="text-xs text-gray-400 font-medium">{maskCPF(selected.cpf)}</p>
               </div>
               <button
-                onClick={() => { setSelected(null); setError(""); setSuccess(""); setRaffleInfo(null); }}
+                onClick={() => { setSelected(null); setError(""); setSuccess(""); setRaffleInfo(null); setPurchases([]); }}
                 className="text-gray-400 hover:text-black text-xs font-bold border-2 border-gray-200 rounded-lg px-2 py-1"
               >
                 Trocar
@@ -207,20 +249,30 @@ export default function VendedorClient() {
               </div>
             )}
 
-            <div className="flex gap-2 mb-0">
+            <div className="flex gap-1.5 mb-0">
               <button
                 onClick={() => handleTabChange("gasto")}
-                className={`flex-1 py-2.5 text-sm font-black rounded-t-xl border-2 border-b-0 transition-colors ${
+                className={`flex-1 py-2.5 text-xs font-black rounded-t-xl border-2 border-b-0 transition-colors ${
                   activeTab === "gasto"
                     ? "bg-red-600 text-white border-red-600"
                     : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
                 }`}
               >
-                💰 Registrar Gasto
+                💰 Registrar
+              </button>
+              <button
+                onClick={() => handleTabChange("historico")}
+                className={`flex-1 py-2.5 text-xs font-black rounded-t-xl border-2 border-b-0 transition-colors ${
+                  activeTab === "historico"
+                    ? "bg-black text-white border-black"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                }`}
+              >
+                📋 Histórico
               </button>
               <button
                 onClick={() => handleTabChange("sorteio")}
-                className={`flex-1 py-2.5 text-sm font-black rounded-t-xl border-2 border-b-0 transition-colors ${
+                className={`flex-1 py-2.5 text-xs font-black rounded-t-xl border-2 border-b-0 transition-colors ${
                   activeTab === "sorteio"
                     ? "bg-yellow-400 text-black border-yellow-400"
                     : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
@@ -271,6 +323,70 @@ export default function VendedorClient() {
                   {loadingPurchase ? "Registrando..." : "REGISTRAR GASTO"}
                 </button>
               </form>
+            )}
+
+            {activeTab === "historico" && (
+              <div>
+                {loadingPurchases ? (
+                  <p className="text-center text-gray-400 text-sm py-6 font-medium">Carregando...</p>
+                ) : purchases.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <div className="text-3xl mb-2">🛒</div>
+                    <p className="text-sm font-medium">Nenhuma compra registrada.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {error && <p className="text-red-600 text-sm font-bold text-center mb-2">{error}</p>}
+                    {purchases.map((p) => (
+                      <div key={p.id} className="border-2 border-gray-100 rounded-xl p-3">
+                        {confirmDeleteId === p.id ? (
+                          <div className="flex items-center gap-2">
+                            <p className="flex-1 text-xs font-bold text-gray-500">Cancelar esta compra?</p>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-black border-2 border-gray-200 text-gray-600 hover:border-gray-400 transition-colors"
+                            >
+                              Não
+                            </button>
+                            <button
+                              onClick={() => handleDeletePurchase(p.id)}
+                              disabled={deletingId === p.id}
+                              className="px-3 py-1.5 rounded-lg text-xs font-black bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                              {deletingId === p.id ? "..." : "Sim"}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-black text-sm truncate">
+                                {p.description || "Compra"}
+                              </p>
+                              <p className="text-xs text-gray-400 font-medium mt-0.5">
+                                {new Date(p.created_at).toLocaleDateString("pt-BR", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                            </div>
+                            <span className="font-black text-red-600 text-sm shrink-0">
+                              R$ {p.amount.toFixed(2).replace(".", ",")}
+                            </span>
+                            <button
+                              onClick={() => setConfirmDeleteId(p.id)}
+                              className="shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-black border-2 border-gray-200 text-gray-400 hover:border-red-400 hover:text-red-600 transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             {activeTab === "sorteio" && (
