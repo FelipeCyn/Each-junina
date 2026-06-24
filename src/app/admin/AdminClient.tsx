@@ -123,7 +123,7 @@ export default function AdminClient({ initialProfiles }: { initialProfiles: Prof
                 </span>
               </div>
 
-              {profile.role === "comprador" && (
+              {(profile.role === "comprador" || profile.role === "vendedor") && (
                 <div className="mb-3 space-y-2">
                   <div className="grid grid-cols-3 gap-1.5">
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
