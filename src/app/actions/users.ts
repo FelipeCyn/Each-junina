@@ -17,7 +17,7 @@ export async function searchBuyers(query: string) {
   let dbQuery = supabase
     .from("profiles")
     .select("id, name, cpf")
-    .eq("role", "comprador")
+    .in("role", ["comprador", "vendedor"])
     .limit(10);
 
   if (isCPF) {

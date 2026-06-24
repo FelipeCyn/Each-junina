@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import Header from "@/components/Header";
+import LogoutButton from "@/components/LogoutButton";
 import VendedorClient from "./VendedorClient";
 
 export default async function VendedorPage() {
@@ -11,7 +11,21 @@ export default async function VendedorPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <Header title="VENDEDOR" subtitle={session.profile?.name} />
+      <header className="bg-red-600 px-4 py-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-white font-black text-lg leading-tight">🎪 VENDEDOR</h1>
+          <p className="text-red-200 text-xs mt-0.5 font-medium">{session.profile?.name}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            href="/vendedor/extrato"
+            className="bg-white/20 hover:bg-white/30 text-white font-black text-xs px-3 py-2 rounded-xl transition-colors"
+          >
+            👤 Meu Extrato
+          </a>
+          <LogoutButton className="text-red-200 hover:text-white text-sm font-bold transition-colors" />
+        </div>
+      </header>
       <VendedorClient />
     </div>
   );
