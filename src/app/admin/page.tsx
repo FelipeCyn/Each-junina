@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import AdminClient from "./AdminClient";
 import LogoutButton from "@/components/LogoutButton";
+import RefreshButton from "@/components/RefreshButton";
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -45,7 +46,8 @@ export default async function AdminPage() {
           <h1 className="text-white font-black text-lg">🎪 ADMIN</h1>
           <p className="text-gray-400 text-xs mt-0.5 font-medium">Each Copa</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <RefreshButton />
           <a
             href="/admin/sorteio"
             className="bg-yellow-400 hover:bg-yellow-300 text-black font-black text-sm px-3 py-2 rounded-xl transition-colors"
